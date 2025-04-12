@@ -3,7 +3,7 @@ import sys
 from book_recommender.logger.logger import logging 
 from book_recommender.exception.exception_handler import AppException
 from book_recommender.utils.utils import read_yaml_file 
-from book_recommender.entity.config_entity import DataIngestionConfig, DataValidationConfig, DataTransformationConfig
+from book_recommender.entity.config_entity import DataIngestionConfig, DataValidationConfig, DataTransformationConfig, ModelTrainerConfig
 from book_recommender.constants import *
 
 
@@ -80,6 +80,32 @@ class AppConfiguration:
             logging.info(f"Data Transformation Config: {response}")
             return response
 
+        except Exception as e:
+            raise AppException(e, sys) from e
+        
+
+    def get_model_trainer_config(self) -> ModelTrainerConfig:
+        try:
+            model_trainer_config = self.configs_info['model_trainer_config']
+            data_transformation_config = self.configs_info['data_transformation_config']
+            data_ingestion_config = self.configs_info['data_ingestion_config']
+            data_validation_config = self.configs_info['data_validation_config']
+            dataset_dir = data_ingestion_config['dataset_dir']
+            artifacts_dir = self.configs_info['artifacts_config']['artifacts_dir']
+
+            pivot_table_dir = os.path.join(artifacts_dir, data_validation_config['serialized_object_dir'], 'book_pivot.pkl')
+            trained_model_dir = os.path.join(artifacts_dir, model_trainer_config['trained_model_dir'])
+            trained_model_name = model_trainer_config['trained_model_name']
+
+            response = ModelTrainerConfig(
+                pivot_table_dir= pivot_table_dir,
+                trained_model_dir= trained_model_dir,
+                trained_model_name= trained_model_name
+            )
+
+            logging.info(f"Model Trainer Config: {response}")
+            return response 
+        
         except Exception as e:
             raise AppException(e, sys) from e
         
